@@ -3,11 +3,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 require_once('conn.php');
-if(isset($_SESSION['user_status'])) 
-{
+if (isset($_SESSION['user_status'])) {
     $uid = $_SESSION['user_id'];
-}
-else{
+} else {
     echo "<script>window.location.href='index.php';</script>";
 }
 ?>
@@ -26,33 +24,64 @@ else{
     <title>Profile</title>
 </head>
 <body>
-    <?php 
+    <?php
     require_once('navbar.php');
-    $sql      = "SELECT `id`, `graph`, `conclusion`, `user` FROM `data` WHERE `user`='{$uid}'";
+    $sql      = "SELECT DISTINCT `report_filter` FROM `report` WHERE `client_id`={$uid}";
     $result   = mysqli_query($conn, $sql);
     ?>
     <div class="container">
-        <?php
-            if (mysqli_num_rows($result) > 0) {
-                $c = 1;
-                while($row = mysqli_fetch_assoc($result))
-                {
-                    ?>
-                    <h5>Graph<?=$c?> :</h5>
-                    <div class="ratio ratio-16x9">
-                        <iframe class="embed-responsive-item" src="uploadFiles/<?=$row['graph']?>" title="Iframe Example" allowfullscreen></iframe>
-                    </div>
-                    <div>
-                        <h5>Conclusion<?=$c?> :</h5>
-                        <?php $c+=1?>
-                        <?php echo $row['conclusion'] ?>
-                    </div>
-                    <hr>
-                    <?php
-                }
-            }
-            ?>
+        <div class="row mt-4">
+            <div class="col-sm-4"></div>
+            <div class="col-sm-4">
+                <form action="view_report.php" method="post">
+                    <h4 class="mb-2">Report Filter:</h4>
+                    <input type="number" name="uid" id="uid" value="<?= $uid ?>" hidden>
+                    <select class="form-select" id="report_filter">
+                        <option value="" disabled selected>Select ... </option>
+                        <?php
+                        if (mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                echo "<option value='{$row['report_filter']}'>{$row['report_filter']}</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                    <h4 class="mb-2 mt-3">Report Name:</h4>
+                    <select class="form-select" id="report_name" name="report_id">
+                        <?php
+                        if (mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                echo "<option value='{$row['report_filter']}'>{$row['report_filter']}</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                    <div class="d-grid mt-4" id="btn-submit"></div>
+                </form>
+            </div>
+            <div class="col-sm-4"></div>
+        </div>
     </div>
-
 </body>
+
 </html>
+<script>
+    $(document).on("change", "#report_filter", function() {
+        var uid = $("#uid").val();
+        var report_filter = $("#report_filter").val();
+        $.ajax({
+            url: "api.php",
+            type: "POST",
+            data: {
+                report_name: true,
+                report_filter: report_filter,
+                client_id: uid
+            },
+            success: function(result) {
+                console.log(result);
+                $("#report_name").html(result);
+                $("#btn-submit").html("<button class='btn btn-primary' type='submit' name='view_report'>View Report</button>");
+            }
+        });
+    });
+</script>

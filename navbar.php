@@ -4,7 +4,7 @@
             <!-- <img src="smLogo.png"> -->
         </li>
         <li class="nav-item active">
-            <a class="nav-link" href="#"><i class="fa fa-home fa-lg" aria-hidden="true"></i> Home</a>
+            <a class="nav-link" href="index.php"><i class="fa fa-home fa-lg" aria-hidden="true"></i> Home</a>
         </li>
         <?php
         if(isset($_SESSION['user_status']))
